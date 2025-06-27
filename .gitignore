@@ -1,0 +1,8 @@
+
+# Database
+db.sqlite3
+
+# Python virtual environments
+env/
+venv/
+.env/
