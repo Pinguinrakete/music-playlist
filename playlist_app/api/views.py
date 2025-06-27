@@ -9,13 +9,37 @@ def playlist_view(request):
 
     if request.method == 'GET':
         playlists = Playlist.objects.all()
-        serializer = PlaylistSerializer(markets, many=True, context={'request': request})
+        serializer = PlaylistSerializer(playlists, many=True, context={'request': request})
         return Response(serializer.data)
     
     if request.method == 'POST':
-        serializer = PlalistSerializer(data=request.data)
+        serializer = PlaylistSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
+        
+
+@api_view(['GET','DELETE','PUT'])
+def playlist_single_view(request, pk):
+
+    if request.method == 'GET':
+        playlist = Playlist.objects.get(pk=pk)
+        serializer = PlaylistSerializer(playlist)
+        return Response(serializer.data)
+    
+    if request.method == 'PUT':
+        playlist = Playlist.objects.get(pk=pk)
+        serializer = PlaylistSerializer(playlist, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors)
+    
+    if request.method == 'DELETE':
+        playlist = Playlist.objects.get(pk=pk)
+        serializer = PlaylistSerializer(playlist)
+        playlist.delete()
+        return Response(serializer.data)
