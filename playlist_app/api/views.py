@@ -1,12 +1,12 @@
-from .permission import allCanGETButStaffOrAuthenticatedOnlyPOST
+from .permissions import allCanGETButStaffOrAuthenticatedOnlyPOST
 from playlist_app.models import Playlist
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
-from .serializer import PlaylistSerializer, RegistrationSerializer
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny,  IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .serializers import PlaylistSerializer, RegistrationSerializer
 # from rest_framework import status
 
 
@@ -29,6 +29,7 @@ def playlist_view(request):
           
 
 @api_view(['GET','DELETE','PUT'])
+@permission_classes([IsAuthenticated])
 def playlist_single_view(request, pk):
 
     if request.method == 'GET':
@@ -51,27 +52,6 @@ def playlist_single_view(request, pk):
         playlist.delete()
         return Response(serializer.data)
     
-class LoginView(ObtainAuthToken):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-
-        data = {}
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            token, created = Token.objects.get_or_create(user=user)
-            data = {
-                'token': token.key,
-                'username': user.username,
-                'email': user.email
-            }
-        else:
-            data=serializer.errors
-
-        return Response(data)
-    
-
 class RegistrationView(APIView):
     permission_classes = [AllowAny]
 
@@ -86,6 +66,27 @@ class RegistrationView(APIView):
                 'token': token.key,
                 'username': saved_account.username,
                 'email': saved_account.email
+            }
+        else:
+            data=serializer.errors
+
+        return Response(data)
+    
+
+class LoginView(ObtainAuthToken):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        data = {}
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            token, created = Token.objects.get_or_create(user=user)
+            data = {
+                'token': token.key,
+                'username': user.username,
+                'email': user.email
             }
         else:
             data=serializer.errors
