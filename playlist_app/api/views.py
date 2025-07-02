@@ -1,4 +1,3 @@
-from .permissions import allCanGETButStaffOrAuthenticatedOnlyPOST
 from playlist_app.models import Playlist
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -6,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny,  IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .permissions import allCanGETButStaffOrAuthenticatedOnlyPOST
 from .serializers import PlaylistSerializer, RegistrationSerializer
 # from rest_framework import status
 
@@ -61,7 +61,7 @@ class RegistrationView(APIView):
         data = {}
         if serializer.is_valid():
             saved_account = serializer.save()
-            token = Token.objects.get_or_create(user=saved_account)
+            token, _ = Token.objects.get_or_create(user=saved_account)
             data = {
                 'token': token.key,
                 'username': saved_account.username,
@@ -71,7 +71,7 @@ class RegistrationView(APIView):
             data=serializer.errors
 
         return Response(data)
-    
+
 
 class LoginView(ObtainAuthToken):
     permission_classes = [AllowAny]
